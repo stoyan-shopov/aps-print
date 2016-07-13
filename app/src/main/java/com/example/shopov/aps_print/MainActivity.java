@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
             "com.android.example.USB_PERMISSION";
     private static final String TAG = MainActivity.class.getSimpleName();
     private PendingIntent mPermissionIntent;
+    private UsbManager mUsbManager;
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if(device != null){
-                            UsbManager mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+
                             //call method to set up device communication
                             Log.d(TAG, "permission granted for device " + device);
                             byte[] bytes = new byte[4];
@@ -74,15 +75,15 @@ public class MainActivity extends AppCompatActivity {
     public void enumerate(View view) {
         Button enumerate_button = (Button)findViewById(R.id.buttonEnumerate);
 
-        UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        HashMap<String, UsbDevice> deviceList = manager.getDeviceList();
+        mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        HashMap<String, UsbDevice> deviceList = mUsbManager.getDeviceList();
         if (deviceList.isEmpty())
             enumerate_button.setText("failed");
         else
         {
             enumerate_button.setText("enumeration successful" + deviceList.values().toArray()[0]);
             UsbDevice device = deviceList.values().toArray(new UsbDevice[0])[0];
-            manager.requestPermission(device, mPermissionIntent);
+            mUsbManager.requestPermission(device, mPermissionIntent);
         }
     }
 }
