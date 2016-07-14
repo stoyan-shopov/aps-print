@@ -1,5 +1,6 @@
 package com.example.shopov.aps_print;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,7 +11,7 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
-import android.support.v7.app.AppCompatActivity;
+//import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,7 +19,7 @@ import android.widget.Button;
 
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     private static final String ACTION_USB_PERMISSION =
             "com.android.example.USB_PERMISSION";
@@ -67,12 +68,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.d(TAG, "shopov started");
 
-        mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-        registerReceiver(mUsbReceiver, filter);
+        //mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+        //IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        //registerReceiver(mUsbReceiver, filter);
     }
     public void enumerate(View view) {
+        /*
         Button enumerate_button = (Button)findViewById(R.id.buttonEnumerate);
 
         mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
@@ -84,6 +87,6 @@ public class MainActivity extends AppCompatActivity {
             enumerate_button.setText("enumeration successful" + deviceList.values().toArray()[0]);
             UsbDevice device = deviceList.values().toArray(new UsbDevice[0])[0];
             mUsbManager.requestPermission(device, mPermissionIntent);
-        }
+        }*/
     }
 }

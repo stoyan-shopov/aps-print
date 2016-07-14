@@ -1,11 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<print-service
+    android:vendor="APS"
 
-    <print-service
-        android:vendor="SomeVendor"
-        android:settingsActivity="foo.bar.MySettingsActivity"
-        android:addPrintersActivity="foo.bar.MyAddPrintersActivity."
+    xmlns:android="http://schemas.android.com/apk/res/android" />
 
-        />
-
-</PreferenceScreen>
