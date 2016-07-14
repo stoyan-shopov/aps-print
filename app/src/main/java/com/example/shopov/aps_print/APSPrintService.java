@@ -1,5 +1,6 @@
 package com.example.shopov.aps_print;
 
+import android.os.Parcelable;
 import android.print.PrinterId;
 import android.print.PrinterInfo;
 import android.printservice.PrintJob;
@@ -18,7 +19,7 @@ public class APSPrintService extends PrintService {
     protected PrinterDiscoverySession onCreatePrinterDiscoverySession() {
         Log.e("shopov", "shopov started");
         try {
-            Thread.sleep(10000, 0);
+            Thread.sleep(1000, 0);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -26,7 +27,14 @@ public class APSPrintService extends PrintService {
             @Override
             public void onStartPrinterDiscovery(List<PrinterId> priorityList) {
                 Log.e("shopov", "shopov 1");
-                addPrinters(new ArrayList<PrinterInfo>());
+
+                PrinterId id = generatePrinterId("shopov ECP");
+                PrinterInfo.Builder builder =
+                        new PrinterInfo.Builder(id, "shopov ECP", PrinterInfo.STATUS_IDLE);
+                PrinterInfo info = builder.build();
+                List<PrinterInfo> infos = new ArrayList<>();
+                infos.add(info);
+                addPrinters(infos);
             }
 
             @Override
@@ -42,6 +50,7 @@ public class APSPrintService extends PrintService {
             @Override
             public void onStartPrinterStateTracking(PrinterId printerId) {
                 Log.e("shopov", "shopov 4");
+                
             }
 
             @Override

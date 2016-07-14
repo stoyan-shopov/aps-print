@@ -70,12 +70,12 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         Log.d(TAG, "shopov started");
 
-        //mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-        //IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-        //registerReceiver(mUsbReceiver, filter);
+        mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        registerReceiver(mUsbReceiver, filter);
     }
     public void enumerate(View view) {
-        /*
+
         Button enumerate_button = (Button)findViewById(R.id.buttonEnumerate);
 
         mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
@@ -87,6 +87,6 @@ public class MainActivity extends Activity {
             enumerate_button.setText("enumeration successful" + deviceList.values().toArray()[0]);
             UsbDevice device = deviceList.values().toArray(new UsbDevice[0])[0];
             mUsbManager.requestPermission(device, mPermissionIntent);
-        }*/
+        }
     }
 }
