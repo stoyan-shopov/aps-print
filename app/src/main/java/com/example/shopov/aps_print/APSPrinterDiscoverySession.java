@@ -53,12 +53,11 @@ public class APSPrinterDiscoverySession extends PrinterDiscoverySession {
         PrinterCapabilitiesInfo.Builder capBuilder =
                 new PrinterCapabilitiesInfo.Builder(printerId);
 
-        capBuilder.addMediaSize(PrintAttributes.MediaSize.ISO_A4, true);
+        capBuilder.addMediaSize(new PrintAttributes.MediaSize("thermal 2\"", "thermal", 672, 10000), true);
         capBuilder.addResolution(new PrintAttributes.Resolution(
-                "Default", "Default", 360, 360), true);
-        capBuilder.setColorModes(PrintAttributes.COLOR_MODE_COLOR
-                        + PrintAttributes.COLOR_MODE_MONOCHROME,
-                PrintAttributes.COLOR_MODE_COLOR);
+                "Default", "Default", 200, 200), true);
+        capBuilder.setColorModes(PrintAttributes.COLOR_MODE_MONOCHROME,
+                PrintAttributes.COLOR_MODE_MONOCHROME);
         capBuilder.setMinMargins(PrintAttributes.Margins.NO_MARGINS);
 
         PrinterCapabilitiesInfo caps = capBuilder.build();

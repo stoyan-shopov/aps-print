@@ -1,5 +1,6 @@
 package com.example.shopov.aps_print;
 
+import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.print.PrinterId;
 import android.print.PrinterInfo;
@@ -9,6 +10,9 @@ import android.printservice.PrinterDiscoverySession;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,8 +39,30 @@ public class APSPrintService extends PrintService {
     @Override
     protected void onPrintJobQueued(PrintJob printJob) {
         Log.e("shopov", "shopov print job queued");
+        Log.e("shopov", "shopov trying to print file " + printJob.getDocument().getInfo().getName());
+        ParcelFileDescriptor fd = printJob.getDocument().getData();
+        InputStream instream = new FileInputStream(fd.getFileDescriptor());
+        byte[] buf = new byte[128];
+
+        try {
+            instream.read(buf);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            instream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            fd.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Log.e("shopov", "shopov read data: " + new String(buf));
+
         printJob.start();
         printJob.complete();
-
     }
 }
