@@ -1,5 +1,5 @@
 package com.example.shopov.aps_print;
-
+import android.graphics.Bitmap;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.print.PrinterId;
@@ -9,6 +9,9 @@ import android.printservice.PrintService;
 import android.printservice.PrinterDiscoverySession;
 import android.support.annotation.Nullable;
 import android.util.Log;
+
+import com.shockwave.pdfium.PdfDocument;
+import com.shockwave.pdfium.PdfiumCore;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -41,8 +44,33 @@ public class APSPrintService extends PrintService {
         Log.e("shopov", "shopov print job queued");
         Log.e("shopov", "shopov trying to print file " + printJob.getDocument().getInfo().getName());
         ParcelFileDescriptor fd = printJob.getDocument().getData();
+
+        int pageNum = 1;
+
+        PdfiumCore pdfiumCore = new PdfiumCore(this);
+        try {
+
+            PdfDocument pdfDocument = pdfiumCore.newDocument(fd);
+
+            pdfiumCore.openPage(pdfDocument, pageNum);
+
+            int width = pdfiumCore.getPageWidthPoint(pdfDocument, pageNum);
+            int height = pdfiumCore.getPageHeightPoint(pdfDocument, pageNum);
+
+            Bitmap bitmap = Bitmap.createBitmap(width, height,
+                    Bitmap.Config.ARGB_8888);
+            pdfiumCore.renderPageBitmap(pdfDocument, bitmap, pageNum, 0, 0,
+                    width, height);
+
+            pdfiumCore.closeDocument(pdfDocument); // important!
+            Log.e("shopov", "shopov bitmap rendered");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         InputStream instream = new FileInputStream(fd.getFileDescriptor());
         byte[] buf = new byte[128];
+
 
         try {
             instream.read(buf);

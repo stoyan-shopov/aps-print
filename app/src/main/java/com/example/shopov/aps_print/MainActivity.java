@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-
 import java.util.HashMap;
 
 public class MainActivity extends Activity {
@@ -26,6 +25,7 @@ public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private PendingIntent mPermissionIntent;
     private UsbManager mUsbManager;
+
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 
@@ -66,6 +66,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.d(TAG, "shopov started");
