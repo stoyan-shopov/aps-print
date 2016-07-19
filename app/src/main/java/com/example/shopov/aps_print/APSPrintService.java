@@ -44,12 +44,15 @@ public class APSPrintService extends PrintService {
         Log.e("shopov", "shopov print job queued");
         Log.e("shopov", "shopov trying to print file " + printJob.getDocument().getInfo().getName());
         ParcelFileDescriptor fd = printJob.getDocument().getData();
+        Log.e("shopov", "shopov 1");
 
         int pageNum = 0;
 
         PdfiumCore pdfiumCore = new PdfiumCore(this);
+        Log.e("shopov", "shopov 2");
         try {
 
+            Log.e("shopov", "shopov 3");
             PdfDocument pdfDocument = pdfiumCore.newDocument(printJob.getDocument().getData());
 
             pdfiumCore.openPage(pdfDocument, pageNum);
