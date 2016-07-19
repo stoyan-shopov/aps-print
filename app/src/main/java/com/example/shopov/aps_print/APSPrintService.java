@@ -45,12 +45,12 @@ public class APSPrintService extends PrintService {
         Log.e("shopov", "shopov trying to print file " + printJob.getDocument().getInfo().getName());
         ParcelFileDescriptor fd = printJob.getDocument().getData();
 
-        int pageNum = 1;
+        int pageNum = 0;
 
         PdfiumCore pdfiumCore = new PdfiumCore(this);
         try {
 
-            PdfDocument pdfDocument = pdfiumCore.newDocument(fd);
+            PdfDocument pdfDocument = pdfiumCore.newDocument(printJob.getDocument().getData());
 
             pdfiumCore.openPage(pdfDocument, pageNum);
 
@@ -73,6 +73,7 @@ public class APSPrintService extends PrintService {
 
 
         try {
+            instream.skip(1);
             instream.read(buf);
         } catch (IOException e) {
             e.printStackTrace();

@@ -22,9 +22,14 @@ android {
     }
 }
 
+repositories {
+    // ...
+    maven { url "https://jitpack.io" }
+}
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.0.0'
-    compile 'com.github.barteksc:pdfium-android:1.4.0'
+    compile 'com.github.stoyan-shopov:PdfiumAndroid:-SNAPSHOT'
 }
