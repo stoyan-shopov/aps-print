@@ -1,5 +1,9 @@
 package com.example.shopov.aps_print;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.print.PrinterId;
@@ -98,6 +102,28 @@ public class APSPrintService extends PrintService {
 
             pdfiumCore.closeDocument(pdfDocument); // important!
             Log.e("shopov", "shopov bitmap rendered");
+            Log.e("shopov", "shopov bitmap dimensions: " + width + "x" + height);
+
+            Bitmap pdfbimtmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(pdfbimtmap);
+            ColorMatrix ma = new ColorMatrix();
+            ma.setSaturation(0);
+            Paint paint = new Paint();
+            paint.setColorFilter(new ColorMatrixColorFilter(ma));
+            canvas.drawBitmap(bitmap, 0, 0, paint);
+            int x, y;
+            for (y = 0; y < height; y ++)
+            {
+                String s = new String();
+                for (x = 0; x < width; x ++)
+                {
+                    if ((pdfbimtmap.getPixel(x, y) & 0xff) >= 0x80)
+                        s += '.';
+                    else
+                        s += ' ';
+                }
+                Log.e("shopov", s);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
