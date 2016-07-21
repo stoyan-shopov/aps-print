@@ -1,1 +1,2 @@
-include ':app'
+include ':app', ':PdfiumAndroid'
+project(':PdfiumAndroid').projectDir = new File('libs/PdfiumAndroid')

@@ -7,15 +7,19 @@ import android.print.PrinterInfo;
 import android.printservice.PrintJob;
 import android.printservice.PrintService;
 import android.printservice.PrinterDiscoverySession;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,19 +45,46 @@ public class APSPrintService extends PrintService {
 
     @Override
     protected void onPrintJobQueued(PrintJob printJob) {
+        byte[] buf = new byte[128];
+
         Log.e("shopov", "shopov print job queued");
         Log.e("shopov", "shopov trying to print file " + printJob.getDocument().getInfo().getName());
         ParcelFileDescriptor fd = printJob.getDocument().getData();
-        Log.e("shopov", "shopov 1");
+        Log.e("shopov", "shopov fd size " + fd.getStatSize());
+
+        InputStream instream = new FileInputStream(fd.getFileDescriptor());
+
+        File outputDir = getCacheDir(); // context being the Activity pointer
+        File outputFile;
+        ParcelFileDescriptor fd_tmp_pdf = new ParcelFileDescriptor(fd);
+
+        try {
+            byte[] tmpbuf = new byte[1024];
+            int len;
+            outputFile = File.createTempFile("shopov-temp", "pdf", outputDir);
+            Log.e("shopov", "shopov temp pdf file created");
+
+            Log.e("shopov", "shopov free space remaining " + outputFile.getFreeSpace());
+            fd_tmp_pdf = ParcelFileDescriptor.open(outputFile, ParcelFileDescriptor.MODE_READ_WRITE);
+            OutputStream outstream = new FileOutputStream(fd_tmp_pdf.getFileDescriptor());
+
+            while ((len = instream.read(tmpbuf)) != -1)
+                outstream.write(tmpbuf, 0, len);
+            outstream.close();
+            Log.e("shopov", "shopov temp fd size " + fd_tmp_pdf.getStatSize());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         int pageNum = 0;
 
         PdfiumCore pdfiumCore = new PdfiumCore(this);
-        Log.e("shopov", "shopov 2");
+
         try {
 
-            Log.e("shopov", "shopov 3");
-            PdfDocument pdfDocument = pdfiumCore.newDocument(printJob.getDocument().getData());
+            Log.e("shopov", "shopov trying to render pdf document");
+            PdfDocument pdfDocument = pdfiumCore.newDocument(fd_tmp_pdf);
 
             pdfiumCore.openPage(pdfDocument, pageNum);
 
@@ -71,12 +102,8 @@ public class APSPrintService extends PrintService {
             e.printStackTrace();
         }
 
-        InputStream instream = new FileInputStream(fd.getFileDescriptor());
-        byte[] buf = new byte[128];
-
-
         try {
-            instream.skip(1);
+            instream.reset();
             instream.read(buf);
         } catch (IOException e) {
             e.printStackTrace();
