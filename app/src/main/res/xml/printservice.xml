@@ -1,5 +1,8 @@
 <print-service
     android:vendor="APS"
+    android:settingsActivity=".MainActivity"
+    android:addPrintersActivity=".MainActivity"
+    android:advancedPrintOptionsActivity=".MainActivity"
 
     xmlns:android="http://schemas.android.com/apk/res/android" />
 
