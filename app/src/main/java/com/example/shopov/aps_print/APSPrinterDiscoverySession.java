@@ -53,7 +53,9 @@ public class APSPrinterDiscoverySession extends PrinterDiscoverySession {
         PrinterCapabilitiesInfo.Builder capBuilder =
                 new PrinterCapabilitiesInfo.Builder(printerId);
 
-        capBuilder.addMediaSize(new PrintAttributes.MediaSize("thermal 2\"", "thermal", 672, 10000), true);
+        //capBuilder.addMediaSize(new PrintAttributes.MediaSize("thermal", "thermal", 960, 10000), true);
+        capBuilder.addMediaSize(new PrintAttributes.MediaSize("thermal x", "thermal", 2362, 12000), true);
+        //capBuilder.addMediaSize(PrintAttributes.MediaSize.UNKNOWN_LANDSCAPE, true);
         capBuilder.addResolution(new PrintAttributes.Resolution(
                 "Default", "Default", 200, 200), true);
         capBuilder.setColorModes(PrintAttributes.COLOR_MODE_MONOCHROME,

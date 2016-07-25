@@ -92,11 +92,12 @@ public class APSPrintService extends PrintService {
 
             pdfiumCore.openPage(pdfDocument, pageNum);
 
-            int width = pdfiumCore.getPageWidthPoint(pdfDocument, pageNum);
+            int width = 576;//pdfiumCore.getPageWidthPoint(pdfDocument, pageNum);
             int height = pdfiumCore.getPageHeightPoint(pdfDocument, pageNum);
 
             Bitmap bitmap = Bitmap.createBitmap(width, height,
                     Bitmap.Config.ARGB_8888);
+
             pdfiumCore.renderPageBitmap(pdfDocument, bitmap, pageNum, 0, 0,
                     width, height);
 
