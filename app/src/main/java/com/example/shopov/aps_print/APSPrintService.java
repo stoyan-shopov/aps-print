@@ -1,9 +1,15 @@
 package com.example.shopov.aps_print;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbEndpoint;
+import android.hardware.usb.UsbInterface;
+import android.hardware.usb.UsbManager;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.print.PrinterId;
@@ -25,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -49,9 +56,43 @@ public class APSPrintService extends PrintService {
 
     @Override
     protected void onPrintJobQueued(PrintJob printJob) {
-        byte[] buf = new byte[128];
 
         Log.e("shopov", "shopov print job queued");
+        UsbManager mUsbManager;
+        mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        HashMap<String, UsbDevice> deviceList = mUsbManager.getDeviceList();
+        if (deviceList.isEmpty())
+            ;//enumerate_button.setText("failed");
+        else
+        {
+            //enumerate_button.setText("enumeration successful" + deviceList.values().toArray()[0]);
+            UsbDevice device = deviceList.values().toArray(new UsbDevice[0])[0];
+
+            byte[] bytes = new byte[4];
+            int TIMEOUT = 0;
+            boolean forceClaim = true;
+
+            bytes[0] = 'A';
+            bytes[1] = 'P';
+            bytes[2] = 'S';
+            bytes[3] = '\n';
+
+            UsbInterface intf = device.getInterface(0);
+            UsbEndpoint endpoint = intf.getEndpoint(0);
+            UsbDeviceConnection connection = mUsbManager.openDevice(device);
+            connection.claimInterface(intf, forceClaim);
+            connection.bulkTransfer(endpoint, bytes, bytes.length, TIMEOUT); //do in another thread
+
+            Log.e("shopov", "shopov print job queue - wrote to printer");
+
+            //mUsbManager.requestPermission(device, mPermissionIntent);
+        }
+
+
+
+        byte[] buf = new byte[128];
+
+
         Log.e("shopov", "shopov trying to print file " + printJob.getDocument().getInfo().getName());
         ParcelFileDescriptor fd = printJob.getDocument().getData();
         Log.e("shopov", "shopov fd size " + fd.getStatSize());

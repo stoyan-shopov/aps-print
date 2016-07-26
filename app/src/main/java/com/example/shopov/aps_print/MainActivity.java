@@ -69,7 +69,7 @@ public class MainActivity extends Activity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d(TAG, "shopov activity started");
+        Log.d(TAG, "shopov started");
 
         mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
         IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
@@ -78,7 +78,6 @@ public class MainActivity extends Activity {
     public void enumerate(View view) {
 
         Button enumerate_button = (Button)findViewById(R.id.buttonEnumerate);
-        Log.e(TAG, "shopov button pressed");
 
         mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         HashMap<String, UsbDevice> deviceList = mUsbManager.getDeviceList();
