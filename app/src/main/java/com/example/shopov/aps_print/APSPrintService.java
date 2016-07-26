@@ -48,6 +48,9 @@ public class APSPrintService extends PrintService {
         return new APSPrinterDiscoverySession(this);
     }
 
+    private static final int  TPH_DOT_WIDTH = 672;
+    private static final int  TPH_BYTE_WIDTH = TPH_DOT_WIDTH / 8;
+
     @Override
     protected void onRequestCancelPrintJob(PrintJob printJob) {
         Log.e("shopov", "shopov print job cancelled");
@@ -133,7 +136,7 @@ public class APSPrintService extends PrintService {
 
             pdfiumCore.openPage(pdfDocument, pageNum);
 
-            int width = 576;//pdfiumCore.getPageWidthPoint(pdfDocument, pageNum);
+            int width = TPH_DOT_WIDTH;//pdfiumCore.getPageWidthPoint(pdfDocument, pageNum);
             int height = pdfiumCore.getPageHeightPoint(pdfDocument, pageNum);
 
             Bitmap bitmap = Bitmap.createBitmap(width, height,
@@ -153,19 +156,66 @@ public class APSPrintService extends PrintService {
             Paint paint = new Paint();
             paint.setColorFilter(new ColorMatrixColorFilter(ma));
             canvas.drawBitmap(bitmap, 0, 0, paint);
-            int x, y;
-            for (y = 0; y < height; y ++)
-            {
-                String s = new String();
-                for (x = 0; x < width; x ++)
+            int x, y, z;
+            if (deviceList.isEmpty())
+                for (y = 0; y < height; y ++)
                 {
-                    if ((pdfbimtmap.getPixel(x, y) & 0xff) >= 0x80)
-                        s += '.';
-                    else
-                        s += ' ';
+                    String s = new String();
+                    for (x = 0; x < width; x ++)
+                    {
+                        if ((pdfbimtmap.getPixel(x, y) & 0xff) >= 0x80)
+                            s += '.';
+                        else
+                            s += ' ';
+                    }
+                    Log.e("shopov", s);
                 }
-                Log.e("shopov", s);
+            else
+            {
+                //enumerate_button.setText("enumeration successful" + deviceList.values().toArray()[0]);
+                UsbDevice device = deviceList.values().toArray(new UsbDevice[0])[0];
+
+                byte[] bytes = new byte[4];
+                int TIMEOUT = 0;
+                boolean forceClaim = true;
+
+                bytes[0] = 'S';
+                bytes[1] = 'G';
+                bytes[2] = 'S';
+                bytes[3] = '\n';
+
+                UsbInterface intf = device.getInterface(0);
+                UsbEndpoint endpoint = intf.getEndpoint(0);
+                UsbDeviceConnection connection = mUsbManager.openDevice(device);
+                connection.claimInterface(intf, forceClaim);
+                connection.bulkTransfer(endpoint, bytes, bytes.length, TIMEOUT); //do in another thread
+
+                Log.e("shopov", "shopov print job queue - wrote to printer");
+                byte[] graphics_line = new byte[128];
+                byte dotx;
+                graphics_line[0] = 27 /* ESC */;
+                graphics_line[1] = 'V';
+                graphics_line[2] = 0 /* attributes */;
+                graphics_line[3] = TPH_BYTE_WIDTH /* byte count low byte */;
+                graphics_line[4] = 0 /* byte count high byte */;
+                for (y = 0; y < height; y ++)
+                {
+                    for (x = 0; x < TPH_BYTE_WIDTH; x ++)
+                    {
+                        for (z = 0, dotx = 0; z < 8; z ++)
+                        {
+                            dotx <<= 1;
+                            if ((pdfbimtmap.getPixel(x * 8 + z, y) & 0xff) >= 0x80)
+                                dotx |= 1;
+                        }
+                        graphics_line[x + 5] = dotx;
+                    }
+                    connection.bulkTransfer(endpoint, graphics_line, 5 + TPH_BYTE_WIDTH, TIMEOUT); //do in another thread
+                }
+
+                //mUsbManager.requestPermission(device, mPermissionIntent);
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
