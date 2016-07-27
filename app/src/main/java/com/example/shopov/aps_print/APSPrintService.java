@@ -205,7 +205,7 @@ public class APSPrintService extends PrintService {
                         for (z = 0, dotx = 0; z < 8; z ++)
                         {
                             dotx <<= 1;
-                            if ((pdfbimtmap.getPixel(x * 8 + z, y) & 0xff) >= 0x80)
+                            if ((pdfbimtmap.getPixel(x * 8 + z, y) & 0xff) < 0x80)
                                 dotx |= 1;
                         }
                         graphics_line[x + 5] = dotx;
