@@ -12,12 +12,14 @@ import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
+import android.print.PageRange;
 import android.print.PrinterId;
 import android.print.PrinterInfo;
 import android.printservice.PrintJob;
 import android.printservice.PrintService;
 import android.printservice.PrinterDiscoverySession;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -94,6 +96,8 @@ public class APSPrintService extends PrintService {
 
 
         byte[] buf = new byte[128];
+        int page_range, page_nr;
+        PageRange[] pages = printJob.getInfo().getPages();
 
 
         Log.e("shopov", "shopov trying to print file " + printJob.getDocument().getInfo().getName());
@@ -125,100 +129,113 @@ public class APSPrintService extends PrintService {
             e.printStackTrace();
         }
 
-        int pageNum = 0;
-
         PdfiumCore pdfiumCore = new PdfiumCore(this);
 
-        try {
+        PdfDocument pdfDocument = null;
+        for (page_range = 0; page_range < pages.length; page_range ++)
+        {
+            Bitmap bitmap = null;
+            Log.e("shopov", "shopov page range: " + pages[page_range].getStart() + " " + pages[page_range].getEnd());
+            try {
+                pdfDocument = pdfiumCore.newDocument(fd_tmp_pdf);
 
-            Log.e("shopov", "shopov trying to render pdf document");
-            PdfDocument pdfDocument = pdfiumCore.newDocument(fd_tmp_pdf);
-
-            pdfiumCore.openPage(pdfDocument, pageNum);
-
-            int width = TPH_DOT_WIDTH;//pdfiumCore.getPageWidthPoint(pdfDocument, pageNum);
-            int height = pdfiumCore.getPageHeightPoint(pdfDocument, pageNum);
-
-            Bitmap bitmap = Bitmap.createBitmap(width, height,
-                    Bitmap.Config.ARGB_8888);
-
-            pdfiumCore.renderPageBitmap(pdfDocument, bitmap, pageNum, 0, 0,
-                    width, height);
-
-            pdfiumCore.closeDocument(pdfDocument); // important!
-            Log.e("shopov", "shopov bitmap rendered");
-            Log.e("shopov", "shopov bitmap dimensions: " + width + "x" + height);
-
-            Bitmap pdfbimtmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(pdfbimtmap);
-            ColorMatrix ma = new ColorMatrix();
-            ma.setSaturation(0);
-            Paint paint = new Paint();
-            paint.setColorFilter(new ColorMatrixColorFilter(ma));
-            canvas.drawBitmap(bitmap, 0, 0, paint);
-            int x, y, z;
-            if (deviceList.isEmpty())
-                for (y = 0; y < height; y ++)
-                {
-                    String s = new String();
-                    for (x = 0; x < width; x ++)
+                Log.e("shopov", "shopov pages in document " + pdfiumCore.getPageCount(pdfDocument));
+                pdfiumCore.openPage(pdfDocument, pages[page_range].getStart(), pages[page_range].getEnd());
+                for (page_nr = pages[page_range].getStart(); page_nr <= pages[page_range].getEnd(); page_nr++) {
                     {
-                        if ((pdfbimtmap.getPixel(x, y) & 0xff) >= 0x80)
-                            s += '.';
-                        else
-                            s += ' ';
-                    }
-                    Log.e("shopov", s);
-                }
-            else
-            {
-                //enumerate_button.setText("enumeration successful" + deviceList.values().toArray()[0]);
-                UsbDevice device = deviceList.values().toArray(new UsbDevice[0])[0];
+                    Log.e("shopov", "shopov trying to render pdf document");
+                    //pdfiumCore.openPage(pdfDocument, page_nr);
 
-                byte[] bytes = new byte[4];
-                int TIMEOUT = 0;
-                boolean forceClaim = true;
+                    Log.e("shopov", "shopov 0");
 
-                bytes[0] = 'S';
-                bytes[1] = 'G';
-                bytes[2] = 'S';
-                bytes[3] = '\n';
+                    int width = TPH_DOT_WIDTH;//pdfiumCore.getPageWidthPoint(pdfDocument, page_nr);
+                    int height = pdfiumCore.getPageHeightPoint(pdfDocument, page_nr);
+                    Log.e("shopov", "shopov 1");
 
-                UsbInterface intf = device.getInterface(0);
-                UsbEndpoint endpoint = intf.getEndpoint(0);
-                UsbDeviceConnection connection = mUsbManager.openDevice(device);
-                connection.claimInterface(intf, forceClaim);
-                connection.bulkTransfer(endpoint, bytes, bytes.length, TIMEOUT); //do in another thread
+                    if (bitmap == null)
+                        bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
-                Log.e("shopov", "shopov print job queue - wrote to printer");
-                byte[] graphics_line = new byte[128];
-                byte dotx;
-                graphics_line[0] = 27 /* ESC */;
-                graphics_line[1] = 'V';
-                graphics_line[2] = 0 /* attributes */;
-                graphics_line[3] = TPH_BYTE_WIDTH /* byte count low byte */;
-                graphics_line[4] = 0 /* byte count high byte */;
-                for (y = 0; y < height; y ++)
-                {
-                    for (x = 0; x < TPH_BYTE_WIDTH; x ++)
-                    {
-                        for (z = 0, dotx = 0; z < 8; z ++)
-                        {
-                            dotx <<= 1;
-                            if ((pdfbimtmap.getPixel(x * 8 + z, y) & 0xff) < 0x80)
-                                dotx |= 1;
+                    Log.e("shopov", "shopov 2");
+
+                    pdfiumCore.renderPageBitmap(pdfDocument, bitmap, page_nr, 0, 0,
+                            width, height);
+                    Log.e("shopov", "shopov 3");
+
+                    //pdfiumCore.closeDocument(pdfDocument); // important!
+                    Log.e("shopov", "shopov bitmap rendered");
+                    Log.e("shopov", "shopov bitmap dimensions: " + width + "x" + height);
+
+                    Bitmap pdfbimtmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(pdfbimtmap);
+                    ColorMatrix ma = new ColorMatrix();
+                    ma.setSaturation(0);
+                    Paint paint = new Paint();
+                    paint.setColorFilter(new ColorMatrixColorFilter(ma));
+                    canvas.drawBitmap(bitmap, 0, 0, paint);
+                    int x, y, z;
+                    if (deviceList.isEmpty())
+                        for (y = 0; y < height; y++) {
+                            String s = new String();
+                            for (x = 0; x < width; x++) {
+                                if ((pdfbimtmap.getPixel(x, y) & 0xff) >= 0x80)
+                                    s += '.';
+                                else
+                                    s += ' ';
+                            }
+                            Log.e("shopov", s);
                         }
-                        graphics_line[x + 5] = dotx;
-                    }
-                    connection.bulkTransfer(endpoint, graphics_line, 5 + TPH_BYTE_WIDTH, TIMEOUT); //do in another thread
-                }
+                    else {
+                        //enumerate_button.setText("enumeration successful" + deviceList.values().toArray()[0]);
+                        UsbDevice device = deviceList.values().toArray(new UsbDevice[0])[0];
 
-                //mUsbManager.requestPermission(device, mPermissionIntent);
+                        byte[] bytes = new byte[4];
+                        int TIMEOUT = 0;
+                        boolean forceClaim = true;
+
+                        bytes[0] = 'S';
+                        bytes[1] = 'G';
+                        bytes[2] = 'S';
+                        bytes[3] = '\n';
+
+                        UsbInterface intf = device.getInterface(0);
+                        UsbEndpoint endpoint = intf.getEndpoint(0);
+                        UsbDeviceConnection connection = mUsbManager.openDevice(device);
+                        connection.claimInterface(intf, forceClaim);
+                        connection.bulkTransfer(endpoint, bytes, bytes.length, TIMEOUT); //do in another thread
+
+                        Log.e("shopov", "shopov print job queue - wrote to printer");
+                        byte[] graphics_line = new byte[128];
+                        byte dotx;
+                        graphics_line[0] = 27 /* ESC */;
+                        graphics_line[1] = 'V';
+                        graphics_line[2] = 0 /* attributes */;
+                        graphics_line[3] = TPH_BYTE_WIDTH /* byte count low byte */;
+                        graphics_line[4] = 0 /* byte count high byte */;
+                        for (y = 0; y < height; y++) {
+                            for (x = 0; x < TPH_BYTE_WIDTH; x++) {
+                                for (z = 0, dotx = 0; z < 8; z++) {
+                                    dotx <<= 1;
+                                    if ((pdfbimtmap.getPixel(x * 8 + z, y) & 0xff) < 0x80)
+                                        dotx |= 1;
+                                }
+                                graphics_line[x + 5] = dotx;
+                            }
+                            connection.bulkTransfer(endpoint, graphics_line, 5 + TPH_BYTE_WIDTH, TIMEOUT); //do in another thread
+                        }
+
+                        //mUsbManager.requestPermission(device, mPermissionIntent);
+                    }
+                }
+                    System.gc();
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+
         }
+        if (pdfDocument != null)
+          pdfiumCore.closeDocument(pdfDocument); // important!
 
         try {
             instream.reset();
